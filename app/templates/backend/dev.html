@@ -1,0 +1,18 @@
+{% extends 'webview/base.html' %}
+{% block container %}
+    <p>Message: {{ message }}</p>
+    <form method='post' action="{{ url_for('create_tables') }}">
+        <label>Create Tables</label>
+        <input type=submit value="Create">
+    </form>
+
+    <form method='post' action="{{ url_for('list_tables') }}">
+        <label>List Tables</label>
+        <input type=submit value="List">
+    </form>
+
+    <form method='post' action="{{ url_for('delete_tables') }}">
+        <label>Delete Tables</label>
+        <input type=submit value="Delete">
+    </form>
+{% endblock %}
