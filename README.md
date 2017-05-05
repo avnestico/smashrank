@@ -6,6 +6,5 @@ Installation
     
 Run
 
-    ./run.py            # Run client 
-    ./run.py local      # Run client locally
-    ./run.py local dev  # Run dev version locally
+    ./run.py            # Run client
+    ./run.py dev        # Run dev version

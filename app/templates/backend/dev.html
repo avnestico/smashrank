@@ -1,18 +1,53 @@
 {% extends 'webview/base.html' %}
 {% block container %}
+    <style>hr {
+        margin-top: 0.5em;
+        margin-bottom: 0.5em;
+    }
+
+    td {
+        padding-left: 3px;
+        padding-right: 3px;
+    }</style>
+
     <p>Message: {{ message }}</p>
-    <form method='post' action="{{ url_for('create_tables') }}">
+    <hr>
+
+    <form method="post" action="{{ url_for('create_tables') }}">
         <label>Create Tables</label>
-        <input type=submit value="Create">
+        <input type="submit" value="Create">
     </form>
+    <hr>
 
     <form method='post' action="{{ url_for('list_tables') }}">
         <label>List Tables</label>
-        <input type=submit value="List">
+        <input type="submit" value="List">
     </form>
+    <hr>
 
     <form method='post' action="{{ url_for('delete_tables') }}">
         <label>Delete Tables</label>
-        <input type=submit value="Delete">
+        <input type="submit" value="Delete">
     </form>
+    <hr>
+
+    <form method='post' action="{{ url_for('import_leaders') }}">
+        <label>Import Provisional Leaders</label>
+        <input type="submit" value="Import"><br/>
+        <table><tr>
+            <td>Game:</th>
+            <td>(melee, wiiu, etc)</th>
+            <td><input type="text" name="game"><br/></th>
+            </tr><tr>
+            <td>Date:</th>
+            <td>(YYYY-MM)</th>
+            <td><input type="text" name="month"><br/></th>
+            </tr><tr>
+            <td>Players:</th>
+            <td>(place, tab, name)</th>
+            <td><textarea name="players" cols="40" rows="5"></textarea></th>
+            </tr>
+        </table>
+    </form>
+    <hr>
 {% endblock %}

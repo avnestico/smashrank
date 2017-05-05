@@ -1,25 +1,51 @@
-import boto3
 import sys
-
-
-def is_local():
-    return "local" in sys.argv
+from datetime import datetime
 
 
 def is_dev():
-    return is_local() and "dev" in sys.argv
+    return "dev" in sys.argv
 
 
-def dynamodb():
-    if is_local():
-        dynamodb = boto3.resource('dynamodb', region_name='us-east-1', endpoint_url="http://localhost:8000")
+def is_valid_game(game):
+    games = {'melee': 'melee',
+             'wiiu': 'wiiu',
+             'smash4': 'wiiu',
+             'sm4sh': 'wiiu'}
+
+    game = strip_game(game).lower()
+    if game in games.keys():
+        return games[game]
     else:
-        dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
-    return dynamodb
+        return None
 
-def dynamodb_client():
-    if is_local():
-        client = boto3.client('dynamodb', region_name='us-east-1', endpoint_url="http://localhost:8000")
-    else:
-        client = boto3.client('dynamodb', region_name='us-east-1')
-    return client
+
+def strip_game(game):
+    return game.replace("_", "").replace("-", "").replace(" ", "")
+
+
+def is_valid_month(date):
+    try:
+        datetime.strptime(date, '%Y-%m')
+        return date
+    except ValueError:
+        return None
+
+
+def is_valid_players(players_input):
+    try:
+        players = []
+        lines = players_input.splitlines()
+        for line in lines:
+            record = line.split("\t")
+            if len(record) != 2:
+                raise TypeError
+            record[0] = int(record[0])  # confirm that position is integer
+            record[0] = pad_int_to_str(record[0], 3)
+            players.append(record)
+        return players
+    except:
+        return None
+
+
+def pad_int_to_str(i, padding):
+    return format(i, '0%dd' % padding)
