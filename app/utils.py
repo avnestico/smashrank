@@ -6,6 +6,14 @@ def is_dev():
     return "dev" in sys.argv
 
 
+def strip_game(game):
+    return game.replace("_", "").replace("-", "").replace(" ", "")
+
+
+def pad_int_to_str(i, padding):
+    return format(i, '0%dd' % padding)
+
+
 def is_valid_game(game):
     games = {'melee': 'melee',
              'wiiu': 'wiiu',
@@ -17,10 +25,6 @@ def is_valid_game(game):
         return games[game]
     else:
         return None
-
-
-def strip_game(game):
-    return game.replace("_", "").replace("-", "").replace(" ", "")
 
 
 def is_valid_month(date):
@@ -47,5 +51,5 @@ def is_valid_players(players_input):
         return None
 
 
-def pad_int_to_str(i, padding):
-    return format(i, '0%dd' % padding)
+def is_valid_tournament(tournament_input):
+    return tournament_input

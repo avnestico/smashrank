@@ -2,7 +2,7 @@ from __future__ import print_function  # Python 2/3 compatibility
 
 import boto3
 
-from app import utils
+from app import utils, compute
 
 
 def db_client():
@@ -59,10 +59,9 @@ def import_provisional_leaders(game, date, players):
     autoincr_result = client.select(SelectExpression=autoincr_query)
     try:
         new_id = int(autoincr_result["Items"][0]["Name"]) + 1
-        print(new_id)
     except:
         new_id = 1
-
+    print(new_id)
 
     player_items = []
     leader_items = []
@@ -99,6 +98,33 @@ def import_provisional_leaders(game, date, players):
     print(leaders_result)
 
     return "Import Complete. "
+
+
+def lookup_player_by_name(game, date, name):
+    client = db_client()
+
+    name_query = 'select * from `Players` where name = "%s"'
+    f_query = format(name_query % name)
+    name_result = client.select(SelectExpression=f_query)
+
+    if "Items" not in name_result:
+        return None
+
+    if len(name_result["Items"]) == 1:
+        player_id = name_result["Items"][0]["Name"]
+        print("Player ID: " + player_id)
+    else:
+        return "Error: " + name + " exists multiple times in database. " + str(name_result["Items"])
+
+    leader_id = "#".join([game, date, player_id])
+    leader_result = client.get_attributes(DomainName="Leaders", ItemName=leader_id)
+
+    if "Attributes" in leader_result:
+        print("Position: " + str(leader_result["Attributes"][0]["Value"]))
+
+        return compute.get_position_points(leader_result["Attributes"][0]["Value"])
+    else:
+        return None
 
 
 def batch_put(client, DomainName, Items):

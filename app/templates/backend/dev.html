@@ -30,7 +30,7 @@
         <button type="button" id="import_provisional_leaders">Import</button><br/>
         <table><tr>
             <td>Game:</th>
-            <td>(melee, wiiu, etc)</th>
+            <td>(melee, wii-u, etc)</th>
             <td><input type="text" name="game"><br/></th>
             </tr><tr>
             <td>Date:</th>
@@ -42,6 +42,13 @@
             <td><textarea name="players" cols="40" rows="5"></textarea></th>
             </tr>
         </table>
+    </form>
+    <hr>
+
+    <form id="ist_form">
+        <label>Import SmashGG Tournament</label>
+        <button type="button" id="import_smashgg_tournament">Import</button><br/>
+        <p>https://smash.gg/tournament/<input type="text" name="tournament" width="10">/events/<input type="text" name="game" size="5">-singles/</p>
     </form>
     <hr>
 {% endblock %}

@@ -42,3 +42,9 @@ $('#import_provisional_leaders').click(function(e){
     post_obj.add_url("import_provisional_leaders");
     $.ajax(post_obj);
 });
+
+$('#import_smashgg_tournament').click(function(e){
+    post_obj.add_data(objectifyForm($("#ist_form")));
+    post_obj.add_url("import_smashgg_tournament");
+    $.ajax(post_obj);
+});
