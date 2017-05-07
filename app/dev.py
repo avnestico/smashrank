@@ -1,4 +1,4 @@
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, json
 
 from app import app, utils, database
 import os
@@ -29,9 +29,9 @@ def dev_command(command):
 def import_leaders():
     if not utils.is_dev():
         return render_template('webview/404.html'), 404
-    game_input = request.form["game"]
-    month_input = request.form["month"]
-    players_input = request.form["players"]
+    game_input = request.json["game"]
+    month_input = request.json["month"]
+    players_input = request.json["players"]
 
     game = utils.is_valid_game(game_input)
     date = utils.is_valid_month(month_input)

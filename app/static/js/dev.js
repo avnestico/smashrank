@@ -1,3 +1,12 @@
+function objectifyForm(form) {//serialize data function
+    var formArray = form.serializeArray()
+    var returnArray = {};
+    for (var i = 0; i < formArray.length; i++){
+        returnArray[formArray[i]['name']] = formArray[i]['value'];
+    }
+    return returnArray;
+}
+
 var post_obj = {
     type: "POST",
     contentType: 'application/json; charset=utf-8',
@@ -29,7 +38,7 @@ $('#delete_tables').click(function(){
 });
 
 $('#import_provisional_leaders').click(function(e){
-    // post_obj.add_data($("#ipl_form").serialize());
+    post_obj.add_data(objectifyForm($("#ipl_form")));
     post_obj.add_url("import_provisional_leaders");
     $.ajax(post_obj);
 });
