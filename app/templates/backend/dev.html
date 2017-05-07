@@ -10,30 +10,24 @@
         padding-right: 3px;
     }</style>
 
-    <p>Message: {{ message }}</p>
+    <p>Message: <span id="message"></span></p>
     <hr>
 
-    <form method="post" action="{{ url_for('create_tables') }}">
-        <label>Create Tables</label>
-        <input type="submit" value="Create">
-    </form>
+    <label>Create Tables</label>
+    <button id="create_tables">Create</button>
     <hr>
 
-    <form method='post' action="{{ url_for('list_tables') }}">
-        <label>List Tables</label>
-        <input type="submit" value="List">
-    </form>
+    <label>List Tables</label>
+    <button id="list_tables">List</button>
     <hr>
 
-    <form method='post' action="{{ url_for('delete_tables') }}">
-        <label>Delete Tables</label>
-        <input type="submit" value="Delete">
-    </form>
+    <label>Delete Tables</label>
+    <button id="delete_tables">Delete</button>
     <hr>
 
-    <form method='post' action="{{ url_for('import_leaders') }}">
+    <form id="ipl_form">
         <label>Import Provisional Leaders</label>
-        <input type="submit" value="Import"><br/>
+        <button type="button" id="import_provisional_leaders">Import</button><br/>
         <table><tr>
             <td>Game:</th>
             <td>(melee, wiiu, etc)</th>
@@ -50,4 +44,8 @@
         </table>
     </form>
     <hr>
+{% endblock %}
+{% block footer %}
+<script type="text/javascript">var dev_mode = "{{ url_for('dev_mode') }}";</script>
+<script src="{{ url_for('static', filename='js/dev.js') }}"></script>
 {% endblock %}
