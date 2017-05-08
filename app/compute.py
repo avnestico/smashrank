@@ -36,6 +36,19 @@ def get_position_points(position):
         return None
 
 
+def get_player_value(players, leaders, name, prefix):
+    player_id = None
+    for k, v in players.items():
+        if v["name"] == name:
+            player_id = k
+            break
+    if player_id:
+        leader_id = "#".join([prefix, player_id])
+        if leader_id in leaders:
+            return get_position_points(leaders[leader_id]["position"])
+    return None
+
+
 def import_smashgg_tournament(url):
     pass
 

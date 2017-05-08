@@ -51,7 +51,6 @@ def dump_tournament(tournament, event):
 
     while len(attendees_dict) < count:
         for i in range(pages):
-            print("Len: " + str(len(attendees_dict)))
             page = i + 1
             if page != 1:
                 standing_url = event_url + standing_string + "&page=" + str(page)

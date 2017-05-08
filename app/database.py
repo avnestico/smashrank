@@ -128,12 +128,54 @@ def lookup_player_by_name(game, date, name):
 
 
 def batch_put(client, DomainName, Items):
+    MAX_ITEMS = 25
+
     res_string = ""
-    while len(Items) > 25:
-        res_string += str(client.batch_put_attributes(DomainName=DomainName, Items=Items[0:25]))
-        Items = Items[25:]
+    while len(Items) > MAX_ITEMS:
+        res_string += str(client.batch_put_attributes(DomainName=DomainName, Items=Items[:MAX_ITEMS]))
+        Items = Items[MAX_ITEMS:]
     res_string += str(client.batch_put_attributes(DomainName=DomainName, Items=Items))
     return res_string
+
+
+def batch_query(query_string):
+    client = db_client()
+
+    query_items = []
+    query_result = client.select(SelectExpression=query_string)
+
+    while True:
+        if "Items" in query_result:
+            query_items += query_result["Items"]
+            if "NextToken" in query_result:
+                query_result = client.select(SelectExpression=query_string, NextToken=query_result["NextToken"])
+            else:
+                break
+        else:
+            break
+
+    query_dict = {}
+    for item in query_items:
+        attributes = {}
+        if "Attributes" in item:
+            for attribute in item["Attributes"]:
+                attributes[attribute["Name"]] = attribute["Value"]
+        query_dict[item["Name"]] = attributes
+
+    return query_dict
+
+
+def batch_query_with_tests(query, tests):
+    MAX_TESTS = 20
+
+    query_dict = {}
+    while len(tests) > MAX_TESTS:
+        f_query = format(query % str(tuple(tests[:MAX_TESTS])))
+        query_dict.update(batch_query(f_query))
+        tests = tests[MAX_TESTS:]
+    f_query = format(query % str(tuple(tests)))
+    query_dict.update(batch_query(f_query))
+    return query_dict
 
 
 if __name__ == "__main__":

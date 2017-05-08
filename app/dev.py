@@ -1,6 +1,7 @@
+import operator
 from flask import render_template, request, jsonify, json
 
-from app import app, utils, database, scrape
+from app import app, utils, database, scrape, compute
 import os
 
 os.environ["TZ"] = "UTC"
@@ -65,12 +66,28 @@ def import_sgg_tournament():
         message = "Tournament: " + str(tournament_dict) + " Attendees:"
 
         tournament_value = 0
+
+        leader_string = "#".join([game, "2016-01"])
+        leader_query = 'SELECT * FROM `Leaders` where ItemName() like "%s%%" limit 200'
+        f_leader_query = format(leader_query % leader_string)
+        leaders = database.batch_query(f_leader_query)
+        print(leaders)
+
+        players_join = []
+        for key in leaders.keys():
+            players_join.append(key.split("#")[2])
+        player_query = 'SELECT * FROM `Players` where ItemName() in %s'
+        players = database.batch_query_with_tests(player_query, players_join)
+        print(players)
+
+        value_dict = {}
         for player in range(len(attendees_dict)):
             player_name = attendees_dict[player]["name"]
-            value = database.lookup_player_by_name("melee", "2016-01", player_name)
+            value = compute.get_player_value(players, leaders, player_name, leader_string)
+            value_dict[player_name] = value
             if value:
                 tournament_value += value
-                message += " {" + player_name + ": " + str(value) + "}"
+        message += str(sorted(value_dict.items(), key=operator.itemgetter(1), reverse=True))
 
         message += " Tournament Value: " + str(tournament_value)
     return jsonify(message=message)
