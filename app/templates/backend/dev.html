@@ -10,47 +10,54 @@
         padding-right: 3px;
     }</style>
 
-    <p>Message: <span id="message"></span></p>
-    <hr>
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-6">
+                <label>Create Tables</label>
+                <button id="create_tables">Create</button>
+                <hr>
 
-    <label>Create Tables</label>
-    <button id="create_tables">Create</button>
-    <hr>
+                <label>List Tables</label>
+                <button id="list_tables">List</button>
+                <hr>
 
-    <label>List Tables</label>
-    <button id="list_tables">List</button>
-    <hr>
+                <label>Delete Tables</label>
+                <button id="delete_tables">Delete</button>
+                <hr>
 
-    <label>Delete Tables</label>
-    <button id="delete_tables">Delete</button>
-    <hr>
+                <form id="ipl_form">
+                    <label>Import Provisional Leaders</label>
+                    <button type="button" id="import_provisional_leaders">Import</button><br/>
+                    <table><tr>
+                        <td>Game:</th>
+                        <td>(melee, wii-u, etc)</th>
+                        <td><input type="text" name="game"><br/></th>
+                        </tr><tr>
+                        <td>Date:</th>
+                        <td>(YYYY-MM)</th>
+                        <td><input type="text" name="month"><br/></th>
+                        </tr><tr>
+                        <td>Players:</th>
+                        <td>(place, tab, name)</th>
+                        <td><textarea name="players" cols="40" rows="5"></textarea></th>
+                        </tr>
+                    </table>
+                </form>
+                <hr>
 
-    <form id="ipl_form">
-        <label>Import Provisional Leaders</label>
-        <button type="button" id="import_provisional_leaders">Import</button><br/>
-        <table><tr>
-            <td>Game:</th>
-            <td>(melee, wii-u, etc)</th>
-            <td><input type="text" name="game"><br/></th>
-            </tr><tr>
-            <td>Date:</th>
-            <td>(YYYY-MM)</th>
-            <td><input type="text" name="month"><br/></th>
-            </tr><tr>
-            <td>Players:</th>
-            <td>(place, tab, name)</th>
-            <td><textarea name="players" cols="40" rows="5"></textarea></th>
-            </tr>
-        </table>
-    </form>
-    <hr>
+                <form id="ist_form">
+                    <label>Import SmashGG Tournament</label>
+                    <button type="button" id="import_smashgg_tournament">Import</button><br/>
+                    <p>https://smash.gg/tournament/<input type="text" name="tournament" width="10">/events/<input type="text" name="game" size="5">-singles/</p>
+                </form>
+                <hr>
+            </div>
+            <div class="col-xs-6">
+                <p><label>Message:</label> <span id="message"></span></p>
+            </div>
+        </div>
 
-    <form id="ist_form">
-        <label>Import SmashGG Tournament</label>
-        <button type="button" id="import_smashgg_tournament">Import</button><br/>
-        <p>https://smash.gg/tournament/<input type="text" name="tournament" width="10">/events/<input type="text" name="game" size="5">-singles/</p>
-    </form>
-    <hr>
+    </div>
 {% endblock %}
 {% block footer %}
 <script type="text/javascript">var dev_mode = "{{ url_for('dev_mode') }}";</script>
