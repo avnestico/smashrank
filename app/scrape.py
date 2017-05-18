@@ -21,6 +21,8 @@ def dump_tournament(tournament, event):
     tournament_data = t.json()
     tournament_name = tournament_data["entities"]["tournament"]["name"]
     timezone = tournament_data["entities"]["tournament"]["timezone"]
+    if not timezone:
+        timezone = "UTC"
 
     # Scrape event page in case event ends earlier than tournament
     event_url = "https://api.smash.gg/tournament/" + tournament + "/event/" + event + "-singles"
