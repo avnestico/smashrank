@@ -1,6 +1,7 @@
 import operator
 from flask import render_template, request, jsonify, json
 
+import app.db.live_db
 from app import app, utils, database, scrape, compute
 import os
 
@@ -70,14 +71,14 @@ def import_sgg_tournament():
         leader_string = "#".join([game, "2016-01"])
         leader_query = 'SELECT * FROM `Leaders` where ItemName() like "%s%%" limit 200'
         f_leader_query = format(leader_query % leader_string)
-        leaders = database.batch_query(f_leader_query)
+        leaders = app.db.live_db.batch_query(f_leader_query)
         print(leaders)
 
         players_join = []
         for key in leaders.keys():
             players_join.append(key.split("#")[2])
         player_query = 'SELECT * FROM `Players` where ItemName() in %s'
-        players = database.batch_query_with_tests(player_query, players_join)
+        players = app.db.live_db.batch_query_with_tests(player_query, players_join)
         print(players)
 
         value_dict = {}
@@ -90,4 +91,13 @@ def import_sgg_tournament():
         message += str(sorted(value_dict.items(), key=operator.itemgetter(1), reverse=True))
 
         message += " Tournament Value: " + str(tournament_value)
+    return jsonify(message=message)
+
+
+@app.route('/dev/search_player_smashgg', methods=["POST"])
+def search_player_smashgg():
+    if not utils.is_dev():
+        return render_template('webview/404.html'), 404
+    player = request.json["player"]
+    message = scrape.search_player_smashgg(player)
     return jsonify(message=message)

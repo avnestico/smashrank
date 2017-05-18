@@ -1,6 +1,8 @@
 import sys
 from datetime import datetime
 
+from werkzeug.routing import BaseConverter, ValidationError
+
 
 def is_dev():
     return "dev" in sys.argv
@@ -53,3 +55,15 @@ def is_valid_players(players_input):
 
 def is_valid_tournament(tournament_input):
     return tournament_input
+
+
+class GameConverter(BaseConverter):
+    """Validates that an input is a game."""
+
+    def to_python(self, value):
+        if not is_valid_game(value):
+            raise ValidationError()
+        return value
+
+    def to_url(self, value):
+        return is_valid_game(value)

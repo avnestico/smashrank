@@ -1,77 +1,24 @@
 from __future__ import print_function  # Python 2/3 compatibility
 
-import boto3
-
 from app import utils, compute
-
-
-def db_client():
-    return boto3.client('sdb')
-
-
-def create_tables():
-    client = db_client()
-
-    seasons = client.create_domain(DomainName='Seasons')
-    print(seasons)
-    leaders = client.create_domain(DomainName='Leaders')
-    print(leaders)
-    tournaments = client.create_domain(DomainName='Tournaments')
-    print(tournaments)
-    players = client.create_domain(DomainName='Players')
-    print(players)
-    results = client.create_domain(DomainName='Results')
-    print(results)
-
-    return "Tables Created"
-
-
-def list_tables():
-    client = db_client()
-    response = client.list_domains()
-    if 'DomainNames' in response:
-        return response["DomainNames"]
-    else:
-        return "No Tables Exist"
-
-
-def delete_tables():
-    client = db_client()
-    tables = list_tables()
-    for name in tables:
-        print(client.delete_domain(DomainName=name))
-    return "Tables Deleted"
+from app.db import live_db
 
 
 def import_provisional_leaders(game, date, players):
-    client = db_client()
-
     # Create Season
-    season_id = "#".join([game, date])
-    season_attrs = [{'Name': 'game', 'Value': game},
-                    {'Name': 'date', 'Value': date},
-                    {'Name': 'provisional', 'Value': "1"}]
-    season_result = client.put_attributes(DomainName='Seasons', ItemName=season_id, Attributes=season_attrs)
-    print(season_result)
+    provisional_months = 12
+    season_id = live_db.create_season(date, game, provisional_months)
 
     # Create Players
-    autoincr_query = 'select itemName() from `Players` where itemName() is not null order by itemName() desc limit 1'
-    autoincr_result = client.select(SelectExpression=autoincr_query)
-    try:
-        new_id = int(autoincr_result["Items"][0]["Name"]) + 1
-    except:
-        new_id = 1
-    print(new_id)
+    new_id = live_db.get_autoincr_id()
 
     player_items = []
     leader_items = []
 
-    name_query = 'select * from `Players` where name = "%s"'
     for line in players:
         position = line[0]
         name = line[1]
-        f_query = format(name_query % name)
-        name_result = client.select(SelectExpression=f_query)
+        name_result = live_db.search_by_name(name)
 
         if "Items" in name_result:
             if len(name_result["Items"]) == 1:
@@ -91,21 +38,17 @@ def import_provisional_leaders(game, date, players):
         leader_item = {'Name': leader_id, 'Attributes': leader_attrs}
         leader_items.append(leader_item)
 
-    player_result = batch_put(client, 'Players', player_items)
+    player_result = live_db.batch_put('Players', player_items)
     print(player_result)
 
-    leaders_result = batch_put(client, 'Leaders', leader_items)
+    leaders_result = live_db.batch_put('Leaders', leader_items)
     print(leaders_result)
 
     return "Import Complete. "
 
 
-def lookup_player_by_name(game, date, name):
-    client = db_client()
-
-    name_query = 'select * from `Players` where name = "%s"'
-    f_query = format(name_query % name)
-    name_result = client.select(SelectExpression=f_query)
+def lookup_player_points_by_name(game, date, name):
+    name_result = live_db.search_by_name(name)
 
     if "Items" not in name_result:
         return None
@@ -116,8 +59,7 @@ def lookup_player_by_name(game, date, name):
     else:
         return "Error: " + name + " exists multiple times in database. " + str(name_result["Items"])
 
-    leader_id = "#".join([game, date, player_id])
-    leader_result = client.get_attributes(DomainName="Leaders", ItemName=leader_id)
+    leader_result = live_db.search_for_leader(date, game, player_id)
 
     if "Attributes" in leader_result:
         print("Position: " + str(leader_result["Attributes"][0]["Value"]))
@@ -125,62 +67,3 @@ def lookup_player_by_name(game, date, name):
         return compute.get_position_points(leader_result["Attributes"][0]["Value"])
     else:
         return None
-
-
-def batch_put(client, DomainName, Items):
-    MAX_ITEMS = 25
-
-    res_string = ""
-    while len(Items) > MAX_ITEMS:
-        res_string += str(client.batch_put_attributes(DomainName=DomainName, Items=Items[:MAX_ITEMS]))
-        Items = Items[MAX_ITEMS:]
-    res_string += str(client.batch_put_attributes(DomainName=DomainName, Items=Items))
-    return res_string
-
-
-def batch_query(query_string):
-    client = db_client()
-
-    query_items = []
-    query_result = client.select(SelectExpression=query_string)
-
-    while True:
-        if "Items" in query_result:
-            query_items += query_result["Items"]
-            if "NextToken" in query_result:
-                query_result = client.select(SelectExpression=query_string, NextToken=query_result["NextToken"])
-            else:
-                break
-        else:
-            break
-
-    query_dict = {}
-    for item in query_items:
-        attributes = {}
-        if "Attributes" in item:
-            for attribute in item["Attributes"]:
-                attributes[attribute["Name"]] = attribute["Value"]
-        query_dict[item["Name"]] = attributes
-
-    return query_dict
-
-
-def batch_query_with_tests(query, tests):
-    MAX_TESTS = 20
-
-    query_dict = {}
-    while len(tests) > MAX_TESTS:
-        f_query = format(query % str(tuple(tests[:MAX_TESTS])))
-        query_dict.update(batch_query(f_query))
-        tests = tests[MAX_TESTS:]
-    f_query = format(query % str(tuple(tests)))
-    query_dict.update(batch_query(f_query))
-    return query_dict
-
-
-if __name__ == "__main__":
-    #print(delete_tables())
-    #print(create_tables())
-    print(list_tables())
-
-

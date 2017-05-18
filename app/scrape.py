@@ -62,7 +62,7 @@ def dump_tournament(tournament, event):
             # Find each player's placement in the given game
             for player in range(len(players)):
                 smashgg_id = players[player]["playerId"]
-                name = players[player]["gamerTag"]
+                name = players[player]["player"]["gamerTag"]
                 print("Name: " + name)
                 entered_events = players[player]["entrants"]
                 for event in range(len(entered_events)):
@@ -127,3 +127,28 @@ def print_date(dict, tournament_list=None):
         name = dict[tournament]["name"]
         date = dict[tournament]["date"]
         print(name, date, sep=": ")
+
+
+def search_player_smashgg(name):
+    url = "http://api.smash.gg/players?filter=" + name
+    p = requests.get(url)
+    player_data = p.json()
+    message = name + ": "
+    count = 0
+    case_ins_message = ""
+    case_ins_count = 0
+    for player in player_data["items"]["entities"]["player"]:
+        if player["rankings"] and player["rank"] < 9999999:
+            if player["gamerTag"] == name:
+                count += 1
+                message += "ID: " + str(player["id"]) + " Twitter: " + str(player["twitterHandle"]) + " Rank: " + str(player["rank"])
+            elif player["gamerTag"].lower() == name.lower():
+                case_ins_count += 1
+                case_ins_message += "(CI) ID: " + str(player["id"]) + " Twitter: " + str(player["twitterHandle"]) + " Rank: " + str(player["rank"])
+    if case_ins_count and not count:
+        message += case_ins_message
+    return message
+
+
+def search_all_players(game):
+    pass

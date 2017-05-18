@@ -48,3 +48,9 @@ $('#import_smashgg_tournament').click(function(e){
     post_obj.add_url("import_smashgg_tournament");
     $.ajax(post_obj);
 });
+
+$('#search_player_smashgg').click(function(e){
+    post_obj.add_data(objectifyForm($("#sps_form")));
+    post_obj.add_url("search_player_smashgg");
+    $.ajax(post_obj);
+});
