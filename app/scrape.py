@@ -129,25 +129,35 @@ def print_date(dict, tournament_list=None):
         print(name, date, sep=": ")
 
 
-def search_player_smashgg(name):
+def get_smashgg_id(name):
     url = "http://api.smash.gg/players?filter=" + name
     p = requests.get(url)
     player_data = p.json()
-    message = name + ": "
-    count = 0
-    case_ins_message = ""
-    case_ins_count = 0
-    for player in player_data["items"]["entities"]["player"]:
-        if player["rankings"] and player["rank"] < 9999999:
-            if player["gamerTag"] == name:
-                count += 1
-                message += "ID: " + str(player["id"]) + " Twitter: " + str(player["twitterHandle"]) + " Rank: " + str(player["rank"])
-            elif player["gamerTag"].lower() == name.lower():
-                case_ins_count += 1
-                case_ins_message += "(CI) ID: " + str(player["id"]) + " Twitter: " + str(player["twitterHandle"]) + " Rank: " + str(player["rank"])
-    if case_ins_count and not count:
-        message += case_ins_message
-    return message
+
+    id_data = []
+    case_ins_id_data = []
+
+    players = player_data["items"]["entities"]["player"]
+
+    if len(players) == 1:
+        player = players[0]
+        if player["gamerTag"] == name:
+            id_data.append({"id": player["id"], "gamerTag": player["gamerTag"], "rank": player["rank"]})
+        elif player["gamerTag"].lower() == name.lower():
+            case_ins_id_data.append({"id": player["id"], "gamerTag": player["gamerTag"], "rank": player["rank"]})
+
+    else:
+        for player in players:
+            if player["rankings"] and player["rank"] < 9999999 and (player["twitterHandle"] or player["country"]):
+                if player["gamerTag"] == name:
+                    id_data.append({"id": player["id"], "gamerTag": player["gamerTag"], "rank": player["rank"]})
+                elif player["gamerTag"].lower() == name.lower():
+                    case_ins_id_data.append({"id": player["id"], "gamerTag": player["gamerTag"], "rank": player["rank"]})
+
+    if len(id_data):
+        return id_data
+    else:
+        return case_ins_id_data
 
 
 def search_all_players(game):

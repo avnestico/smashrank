@@ -17,14 +17,10 @@ def pad_int_to_str(i, padding):
 
 
 def is_valid_game(game):
-    games = {'melee': 'melee',
-             'wiiu': 'wii-u',
-             'smash4': 'wii-u',
-             'sm4sh': 'wii-u'}
-
-    game = strip_game(game).lower()
-    if game in games.keys():
-        return games[game]
+    games = ['melee', 'wii-u']
+    game = game.lower()
+    if game in games:
+        return game
     else:
         return None
 

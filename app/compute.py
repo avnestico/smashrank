@@ -1,3 +1,4 @@
+TOURNAMENT_VALUE_THRESHOLD = 100
 
 
 def get_position_points(position):
@@ -36,12 +37,20 @@ def get_position_points(position):
         return None
 
 
-def get_player_value(players, leaders, name, prefix):
+def get_player_value(players, leaders, player, prefix):
     player_id = None
     for k, v in players.items():
-        if v["name"] == name:
-            player_id = k
-            break
+        try:
+            if "smashgg_id" in v and str(player["smashgg_id"]) in v["smashgg_id"]:
+                print("Match!")
+                player_id = k
+                break
+            elif v["name"] == player["name"]:
+                print("Lame match", v, player)
+                player_id = k
+                break
+        except:
+            print("GPV Error")
     if player_id:
         leader_id = "#".join([prefix, player_id])
         if leader_id in leaders:

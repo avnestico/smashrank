@@ -8,6 +8,36 @@ def db_client():
 client = db_client()
 
 
+def create_tables():
+    seasons = client.create_domain(DomainName='Seasons')
+    print(seasons)
+    leaders = client.create_domain(DomainName='Leaders')
+    print(leaders)
+    tournaments = client.create_domain(DomainName='Tournaments')
+    print(tournaments)
+    players = client.create_domain(DomainName='Players')
+    print(players)
+    results = client.create_domain(DomainName='Results')
+    print(results)
+
+    return "Tables Created"
+
+
+def list_tables():
+    response = client.list_domains()
+    if 'DomainNames' in response:
+        return response["DomainNames"]
+    else:
+        return "No Tables Exist"
+
+
+def delete_tables():
+    tables = list_tables()
+    for name in tables:
+        print(client.delete_domain(DomainName=name))
+    return "Tables Deleted"
+
+
 def search_by_name(name):
     name_query = 'select * from `Players` where name = "%s"'
     f_query = format(name_query % name)
@@ -43,6 +73,17 @@ def create_season(date, game, months):
     return season_id
 
 
+def simpledb_json_to_compact_json(query_items):
+    query_dict = {}
+    for item in query_items:
+        attributes = {}
+        if "Attributes" in item:
+            for attribute in item["Attributes"]:
+                attributes[attribute["Name"]] = attribute["Value"]
+        query_dict[item["Name"]] = attributes
+    return query_dict
+
+
 def batch_put(DomainName, Items):
     MAX_ITEMS = 25
 
@@ -68,15 +109,7 @@ def batch_query(query_string):
         else:
             break
 
-    query_dict = {}
-    for item in query_items:
-        attributes = {}
-        if "Attributes" in item:
-            for attribute in item["Attributes"]:
-                attributes[attribute["Name"]] = attribute["Value"]
-        query_dict[item["Name"]] = attributes
-
-    return query_dict
+    return simpledb_json_to_compact_json(query_items)
 
 
 def batch_query_with_tests(query, tests):
@@ -92,34 +125,9 @@ def batch_query_with_tests(query, tests):
     return query_dict
 
 
-def create_tables():
-    seasons = client.create_domain(DomainName='Seasons')
-    print(seasons)
-    leaders = client.create_domain(DomainName='Leaders')
-    print(leaders)
-    tournaments = client.create_domain(DomainName='Tournaments')
-    print(tournaments)
-    players = client.create_domain(DomainName='Players')
-    print(players)
-    results = client.create_domain(DomainName='Results')
-    print(results)
-
-    return "Tables Created"
-
-
-def list_tables():
-    response = client.list_domains()
-    if 'DomainNames' in response:
-        return response["DomainNames"]
-    else:
-        return "No Tables Exist"
-
-
-def delete_tables():
-    tables = list_tables()
-    for name in tables:
-        print(client.delete_domain(DomainName=name))
-    return "Tables Deleted"
+def get_players_without_smashgg_id():
+    players_query = 'select * from `Players` where smashgg_id is null'
+    return batch_query(players_query)
 
 
 if __name__ == "__main__":

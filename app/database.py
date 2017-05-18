@@ -1,6 +1,6 @@
 from __future__ import print_function  # Python 2/3 compatibility
 
-from app import utils, compute
+from app import utils, compute, scrape
 from app.db import live_db
 
 
@@ -67,3 +67,33 @@ def lookup_player_points_by_name(game, date, name):
         return compute.get_position_points(leader_result["Attributes"][0]["Value"])
     else:
         return None
+
+
+def add_all_smashgg_ids():
+    """Set all players' smashgg ids and smashgg names if they don't have a smashgg id."""
+
+    names_result = live_db.get_players_without_smashgg_id()
+    print(names_result)
+
+    player_items = []
+    for player_id, attributes in names_result.iteritems():
+        if 'smashgg_id' not in attributes and 'name' in attributes:
+            name = attributes['name']
+            id_data = scrape.get_smashgg_id(name)
+            if len(id_data) == 1:
+                player_attrs = [{'Name': 'smashgg_id', 'Value': str(id_data[0]["id"])},
+                                {'Name': 'name', 'Value': id_data[0]["gamerTag"], "Replace": True}]
+                player_item = {'Name': player_id, 'Attributes': player_attrs}
+                player_items.append(player_item)
+            else:
+                print(player_id, str(attributes), str(id_data))
+        else:
+            print(player_id, str(attributes))
+
+    if player_items:
+        player_result = live_db.batch_put('Players', player_items)
+        print(player_result)
+
+
+if __name__ == "__main__":
+    add_all_smashgg_ids()

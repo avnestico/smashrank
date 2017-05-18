@@ -1,7 +1,7 @@
 import operator
 from flask import render_template, request, jsonify, json
 
-import app.db.live_db
+from app.db import live_db, mock_db
 from app import app, utils, database, scrape, compute
 import os
 
@@ -69,25 +69,29 @@ def import_sgg_tournament():
         tournament_value = 0
 
         leader_string = "#".join([game, "2016-01"])
-        leader_query = 'SELECT * FROM `Leaders` where ItemName() like "%s%%" limit 200'
+        leader_query = 'SELECT * FROM `Leaders` where ItemName() like "%s%%" and position is not null order by position limit 200'
         f_leader_query = format(leader_query % leader_string)
-        leaders = app.db.live_db.batch_query(f_leader_query)
+        leaders = live_db.batch_query(f_leader_query)
         print(leaders)
 
         players_join = []
         for key in leaders.keys():
             players_join.append(key.split("#")[2])
         player_query = 'SELECT * FROM `Players` where ItemName() in %s'
-        players = app.db.live_db.batch_query_with_tests(player_query, players_join)
+        players = live_db.batch_query_with_tests(player_query, players_join)
         print(players)
 
         value_dict = {}
         for player in range(len(attendees_dict)):
+            value = compute.get_player_value(players, leaders, attendees_dict[player], leader_string)
             player_name = attendees_dict[player]["name"]
-            value = compute.get_player_value(players, leaders, player_name, leader_string)
             value_dict[player_name] = value
             if value:
                 tournament_value += value
+
+        if tournament_value >= compute.TOURNAMENT_VALUE_THRESHOLD:
+            mock_db.import_tournament(attendees_dict, value_dict)
+
         message += str(sorted(value_dict.items(), key=operator.itemgetter(1), reverse=True))
 
         message += " Tournament Value: " + str(tournament_value)
@@ -99,5 +103,5 @@ def search_player_smashgg():
     if not utils.is_dev():
         return render_template('webview/404.html'), 404
     player = request.json["player"]
-    message = scrape.search_player_smashgg(player)
+    message = scrape.get_smashgg_id(player)
     return jsonify(message=message)
