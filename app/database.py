@@ -4,6 +4,18 @@ from app import utils, compute, scrape
 from app.db import live_db
 
 
+def create_tables():
+    return live_db.create_tables()
+
+
+def list_tables():
+    return live_db.list_tables()
+
+
+def delete_tables():
+    return live_db.delete_tables()
+
+
 def import_provisional_leaders(game, date, players):
     # Create Season
     provisional_months = 12

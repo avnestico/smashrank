@@ -6,20 +6,17 @@ def db_client():
 
 
 client = db_client()
+tables = ['Seasons', 'Leaders', 'Tournaments', 'Players', 'Results']
 
 
-def create_tables():
-    seasons = client.create_domain(DomainName='Seasons')
-    print(seasons)
-    leaders = client.create_domain(DomainName='Leaders')
-    print(leaders)
-    tournaments = client.create_domain(DomainName='Tournaments')
-    print(tournaments)
-    players = client.create_domain(DomainName='Players')
-    print(players)
-    results = client.create_domain(DomainName='Results')
-    print(results)
+def create_table(name):
+    table = client.create_domain(DomainName=name)
+    print(table)
 
+
+def create_tables(suffix=""):
+    for name in tables:
+        create_table(name + suffix)
     return "Tables Created"
 
 
@@ -31,10 +28,13 @@ def list_tables():
         return "No Tables Exist"
 
 
-def delete_tables():
-    tables = list_tables()
+def delete_table(name):
+    print(client.delete_domain(DomainName=name))
+
+
+def delete_tables(suffix=""):
     for name in tables:
-        print(client.delete_domain(DomainName=name))
+        delete_table(name + suffix)
     return "Tables Deleted"
 
 
@@ -95,7 +95,7 @@ def batch_put(DomainName, Items):
     return res_string
 
 
-def batch_query(query_string):
+def batch_query(query_string, compact=True):
     query_items = []
     query_result = client.select(SelectExpression=query_string)
 
@@ -109,7 +109,10 @@ def batch_query(query_string):
         else:
             break
 
-    return simpledb_json_to_compact_json(query_items)
+    if compact:
+        return simpledb_json_to_compact_json(query_items)
+    else:
+        return query_items
 
 
 def batch_query_with_tests(query, tests):
@@ -130,5 +133,16 @@ def get_players_without_smashgg_id():
     return batch_query(players_query)
 
 
+def backup_databases(table_list=tables, suffix="_Backup"):
+    print(create_tables(suffix=suffix))
+    query_string = 'select * from `%s`'
+    for table in table_list:
+        Items = batch_query(query_string % table, compact=False)
+        if Items:
+            backup_table = table + suffix
+            print(batch_put(backup_table, Items))
+
+
 if __name__ == "__main__":
-    print(list_tables())
+    #backup_databases()
+    list_tables()
